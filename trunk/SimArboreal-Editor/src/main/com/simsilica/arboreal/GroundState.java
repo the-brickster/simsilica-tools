@@ -38,11 +38,14 @@ package com.simsilica.arboreal;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.WrapMode;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.event.BaseAppState;
 import com.simsilica.lemur.geom.MBox;
@@ -63,20 +66,49 @@ public class GroundState extends BaseAppState {
 
     @Override
     protected void initialize( Application app ) {
-        groundMaterial = GuiGlobals.getInstance().createMaterial(ColorRGBA.Green, true).getMaterial();
- 
+    
+        AssetManager assets = app.getAssetManager();
+    
+        groundMaterial = GuiGlobals.getInstance().createMaterial(ColorRGBA.Green, true).getMaterial(); 
         
         MBox b = new MBox(500, 0, 500, 50, 0, 50, MBox.TOP_MASK);
         b.scaleTextureCoordinates(new Vector2f(250, 250));
         ground = new Geometry("Box", b);
 
-        greenMaterial = new Material(app.getAssetManager(), "Common/MatDefs/Light/Lighting.j3md");
+        greenMaterial = new Material(assets, "Common/MatDefs/Light/Lighting.j3md");
         greenMaterial.setColor("Diffuse", ColorRGBA.Green);
         greenMaterial.setColor("Ambient", ColorRGBA.Green);
         greenMaterial.setBoolean("UseMaterialColors", true);
         ground.setMaterial(greenMaterial);
 
         
+        groundMaterial = new Material(assets, "MatDefs/MultiResolution.j3md"); 
+        groundMaterial.setColor("Diffuse", ColorRGBA.White); 
+        groundMaterial.setColor("Specular", ColorRGBA.White); 
+        groundMaterial.setColor("Ambient", ColorRGBA.White);
+        groundMaterial.setFloat("Shininess", 0);
+        groundMaterial.setBoolean("UseMaterialColors", true);
+
+        Texture texture;
+ 
+        //texture = assets.loadTexture("Textures/test-pattern.png");       
+        texture = assets.loadTexture("Textures/grass.jpg");
+        texture.setWrap(WrapMode.Repeat);
+        groundMaterial.setTexture("DiffuseMap", texture);
+        
+        texture = assets.loadTexture("Textures/grass-flat.jpg");
+        texture.setWrap(WrapMode.Repeat);
+        groundMaterial.setTexture("BackgroundDiffuseMap", texture);
+ 
+        texture = assets.loadTexture("Textures/brown-dirt-norm.jpg");
+        texture.setWrap(WrapMode.Repeat);
+        groundMaterial.setTexture("NormalMap", texture);
+       
+        texture = assets.loadTexture("Textures/noise-x3-512.png");
+        texture.setWrap(WrapMode.Repeat);
+        groundMaterial.setTexture("NoiseMap", texture);
+
+        ground.setMaterial(groundMaterial);               
     }
 
     @Override
