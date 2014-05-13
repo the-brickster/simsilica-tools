@@ -99,6 +99,7 @@ public class TreeEditor extends SimpleApplication {
     public TreeEditor() {
         super(new StatsAppState(), new DebugKeysAppState(), new MovementState(),
               new DebugHudState(),
+              new LightingState(),
               new ScreenshotAppState("", System.currentTimeMillis())); 
     }
  
@@ -134,16 +135,6 @@ public class TreeEditor extends SimpleApplication {
 
         rootNode.attachChild(geom); 
 
-        DirectionalLight sun = new DirectionalLight();
-        sun.setColor(ColorRGBA.White.mult(2));
-        Vector3f lightDir = new Vector3f(-0.2f, -1, -0.3f).normalizeLocal();
-        sun.setDirection(lightDir);
-        rootNode.addLight(sun);
-        
-        AmbientLight ambient = new AmbientLight();
-        ambient.setColor(new ColorRGBA(0.25f, 0.25f, 0.25f, 1));
-        rootNode.addLight(ambient);
- 
         hud = new Node("HUD");
         guiNode.attachChild(hud);
  
