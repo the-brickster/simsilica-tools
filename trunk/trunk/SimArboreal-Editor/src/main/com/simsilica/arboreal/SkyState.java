@@ -38,12 +38,14 @@ package com.simsilica.arboreal;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.simsilica.lemur.core.VersionedHolder;
+import com.jme3.scene.Spatial.CullHint;
+import com.jme3.scene.shape.Sphere;
+import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.core.VersionedReference;
 import com.simsilica.lemur.event.BaseAppState;
 
@@ -52,35 +54,62 @@ import com.simsilica.lemur.event.BaseAppState;
  *
  *  @author    Paul Speed
  */
-public class LightingState extends BaseAppState {
+public class SkyState extends BaseAppState {
 
-    private VersionedHolder<Vector3f> lightDir = new VersionedHolder<Vector3f>();
-    
+    private ColorRGBA skyColor;
     private ColorRGBA sunColor;
-    private DirectionalLight sun;
-    private ColorRGBA ambientColor;
-    private AmbientLight ambient;
+    private Geometry sky;
+    private Geometry sun;
+    private boolean showSky;
     
-    private Node rootNode;  // the one we added the lights to
-    
-    public LightingState() {
-        lightDir.setObject(new Vector3f(-0.2f, -1, -0.3f).normalizeLocal());
-        this.sunColor = ColorRGBA.White.mult(2);
-        this.ambientColor = new ColorRGBA(0.25f, 0.25f, 0.25f, 1);
+    private VersionedReference<Vector3f> lightDir;
+
+    public SkyState() {
+        this.sunColor = new ColorRGBA(1, 1, 0.9f, 1);
+        this.skyColor = new ColorRGBA(0.5f, 0.5f, 1f, 1);
+    }
+
+    public void setShowSky( boolean b ) {
+        this.showSky = b;
+        if( sky == null ) {
+            return;
+        }
+        resetShowSky();
     }
     
-    public VersionedReference<Vector3f> getLightDirRef() {
-        return lightDir.createReference();
+    protected void resetShowSky() {
+        if( showSky ) {
+            sky.setCullHint(CullHint.Inherit);
+        } else {
+            sky.setCullHint(CullHint.Always);
+        }
     }
-    
+
+    public boolean getShowSky() {
+        return sky.getCullHint() == CullHint.Inherit; 
+    }
+
     @Override
     protected void initialize( Application app ) {
-        sun = new DirectionalLight();
-        sun.setColor(sunColor);
-        sun.setDirection(lightDir.getObject());
+    
+        lightDir = getState(LightingState.class).getLightDirRef();
+    
+ 
+        // Add a sun sphere
+        Sphere orb = new Sphere(6, 12, 50);
+        sun = new Geometry("Sun", orb);
+        sun.setMaterial(GuiGlobals.getInstance().createMaterial(sunColor, false).getMaterial());
+        sun.move(lightDir.get().mult(-900));
+
+
+        // Add a sky sphere
+        orb = new Sphere(6, 12, 800, true, true);
+        sky = new Geometry("Sky", orb);
+        sky.setMaterial(GuiGlobals.getInstance().createMaterial(skyColor, false).getMaterial());
+        sky.setQueueBucket(Bucket.Sky);
+        sky.setIgnoreTransform(true);
         
-        ambient = new AmbientLight();
-        ambient.setColor(ambientColor);
+        resetShowSky();
     }
 
     @Override
@@ -89,15 +118,21 @@ public class LightingState extends BaseAppState {
 
     @Override
     protected void enable() {
-        rootNode = ((SimpleApplication)getApplication()).getRootNode();
-        rootNode.addLight(sun);
-        rootNode.addLight(ambient);
+        Node rootNode = ((SimpleApplication)getApplication()).getRootNode();
+        rootNode.attachChild(sun);
+        rootNode.attachChild(sky);
+    }
+
+    @Override
+    public void update( float tpf ) {
+        if( lightDir.update() ) {
+            sun.setLocalTranslation(lightDir.get().mult(-900));
+        }
     }
 
     @Override
     protected void disable() {
-        rootNode.removeLight(sun);
-        rootNode.removeLight(ambient);
+        sun.removeFromParent();
+        sky.removeFromParent();
     }
 }
-
