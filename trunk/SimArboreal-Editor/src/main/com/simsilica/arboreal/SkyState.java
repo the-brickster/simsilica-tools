@@ -71,13 +71,13 @@ public class SkyState extends BaseAppState {
 
     public void setShowSky( boolean b ) {
         this.showSky = b;
-        if( sky == null ) {
-            return;
-        }
         resetShowSky();
     }
     
     protected void resetShowSky() {
+        if( sky == null ) {
+            return;
+        }
         if( showSky ) {
             sky.setCullHint(CullHint.Inherit);
         } else {

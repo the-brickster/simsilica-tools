@@ -61,7 +61,29 @@ public class GroundState extends BaseAppState {
     private Material groundMaterial;
     private Geometry ground;
 
+    private boolean showGrass = false;
+
     public GroundState() {
+    }
+
+    public void setShowGrass( boolean b ) {
+        this.showGrass = b;
+        resetGrass();
+    }
+    
+    public boolean getShowGrass() {
+        return showGrass;
+    }
+
+    protected void resetGrass() {
+        if( ground == null ) {
+            return;
+        }
+        if( showGrass ) {
+            ground.setMaterial(groundMaterial);
+        } else {
+            ground.setMaterial(greenMaterial);
+        }
     }
 
     @Override
@@ -108,7 +130,7 @@ public class GroundState extends BaseAppState {
         texture.setWrap(WrapMode.Repeat);
         groundMaterial.setTexture("NoiseMap", texture);
 
-        ground.setMaterial(groundMaterial);               
+        resetGrass();
     }
 
     @Override
