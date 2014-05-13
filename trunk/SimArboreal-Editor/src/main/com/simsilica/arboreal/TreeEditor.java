@@ -78,13 +78,13 @@ public class TreeEditor extends SimpleApplication {
         
         AppSettings settings = new AppSettings(false);
         settings.setTitle("SimArboreal Tree Editor");
-        settings.setSettingsDialogImage("/com/simsilica/arboreal/TreeEditor-Splash.png");
+        settings.setSettingsDialogImage("/com/simsilica/arboreal/images/TreeEditor-Splash.png");
         
         try {
             BufferedImage[] icons = new BufferedImage[] {
-                    ImageIO.read( TreeEditor.class.getResource( "/com/simsilica/arboreal/TreeEditor-icon-128.png" ) ),
-                    ImageIO.read( TreeEditor.class.getResource( "/com/simsilica/arboreal/TreeEditor-icon-32.png" ) ),
-                    ImageIO.read( TreeEditor.class.getResource( "/com/simsilica/arboreal/TreeEditor-icon-16.png" ) )
+                    ImageIO.read( TreeEditor.class.getResource( "/com/simsilica/arboreal/images/TreeEditor-icon-128.png" ) ),
+                    ImageIO.read( TreeEditor.class.getResource( "/com/simsilica/arboreal/images/TreeEditor-icon-32.png" ) ),
+                    ImageIO.read( TreeEditor.class.getResource( "/com/simsilica/arboreal/images/TreeEditor-icon-16.png" ) )
                 };
             settings.setIcons(icons);
         } catch( IOException e ) {
