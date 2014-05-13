@@ -38,49 +38,45 @@ package com.simsilica.arboreal;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
+import com.jme3.math.Vector2f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.simsilica.lemur.core.VersionedHolder;
-import com.simsilica.lemur.core.VersionedReference;
+import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.event.BaseAppState;
+import com.simsilica.lemur.geom.MBox;
 
 
 /**
  *
  *  @author    Paul Speed
  */
-public class LightingState extends BaseAppState {
+public class GroundState extends BaseAppState {
 
-    private VersionedHolder<Vector3f> lightDir = new VersionedHolder<Vector3f>();
-    
-    private ColorRGBA sunColor;
-    private DirectionalLight sun;
-    private ColorRGBA ambientColor;
-    private AmbientLight ambient;
-    
-    private Node rootNode;  // the one we added the lights to
-    
-    public LightingState() {
-        lightDir.setObject(new Vector3f(-0.2f, -1, -0.3f).normalizeLocal());
-        this.sunColor = ColorRGBA.White.mult(2);
-        this.ambientColor = new ColorRGBA(0.25f, 0.25f, 0.25f, 1);
+    private Material greenMaterial;
+    private Material groundMaterial;
+    private Geometry ground;
+
+    public GroundState() {
     }
-    
-    public VersionedReference<Vector3f> getLightDirRef() {
-        return lightDir.createReference();
-    }
-    
+
     @Override
     protected void initialize( Application app ) {
-        sun = new DirectionalLight();
-        sun.setColor(sunColor);
-        sun.setDirection(lightDir.getObject());
+        groundMaterial = GuiGlobals.getInstance().createMaterial(ColorRGBA.Green, true).getMaterial();
+ 
         
-        ambient = new AmbientLight();
-        ambient.setColor(ambientColor);
+        MBox b = new MBox(500, 0, 500, 50, 0, 50, MBox.TOP_MASK);
+        b.scaleTextureCoordinates(new Vector2f(250, 250));
+        ground = new Geometry("Box", b);
+
+        greenMaterial = new Material(app.getAssetManager(), "Common/MatDefs/Light/Lighting.j3md");
+        greenMaterial.setColor("Diffuse", ColorRGBA.Green);
+        greenMaterial.setColor("Ambient", ColorRGBA.Green);
+        greenMaterial.setBoolean("UseMaterialColors", true);
+        ground.setMaterial(greenMaterial);
+
+        
     }
 
     @Override
@@ -89,15 +85,12 @@ public class LightingState extends BaseAppState {
 
     @Override
     protected void enable() {
-        rootNode = ((SimpleApplication)getApplication()).getRootNode();
-        rootNode.addLight(sun);
-        rootNode.addLight(ambient);
+        Node rootNode = ((SimpleApplication)getApplication()).getRootNode();
+        rootNode.attachChild(ground); 
     }
 
     @Override
     protected void disable() {
-        rootNode.removeLight(sun);
-        rootNode.removeLight(ambient);
+        ground.removeFromParent();
     }
 }
-
