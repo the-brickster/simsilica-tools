@@ -102,6 +102,7 @@ public class TreeEditor extends SimpleApplication {
               new LightingState(),
               new GroundState(),
               new SkyState(),
+              new TreeOptionsState(),
               new ScreenshotAppState("", System.currentTimeMillis())); 
     }
  
@@ -120,9 +121,6 @@ public class TreeEditor extends SimpleApplication {
         GuiGlobals.initialize(this);
 
         cam.setLocation(new Vector3f(0, 1.8f, 10));
-
-        stateManager.getState(SkyState.class).setShowSky(true);
-        stateManager.getState(GroundState.class).setShowGrass(true);
 
         InputMapper inputMapper = GuiGlobals.getInstance().getInputMapper();
         MainFunctions.initializeDefaultMappings(inputMapper);
@@ -146,5 +144,9 @@ public class TreeEditor extends SimpleApplication {
         guiNode.attachChild(hud);
  
         new StyleLoader(GuiGlobals.getInstance().getStyles()).loadStyleResource(GLASS_STYLES);
+ 
+        TreeOptionsState treeOptions = stateManager.getState(TreeOptionsState.class);                
+        treeOptions.addOptionToggle("Show Grass", stateManager.getState(GroundState.class), "setShowGrass");                
+        treeOptions.addOptionToggle("Show Sky", stateManager.getState(SkyState.class), "setShowSky");                
     }        
 }
