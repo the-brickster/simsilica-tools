@@ -122,6 +122,7 @@ public class TreeEditor extends SimpleApplication {
         cam.setLocation(new Vector3f(0, 1.8f, 10));
 
         stateManager.getState(SkyState.class).setShowSky(true);
+        stateManager.getState(GroundState.class).setShowGrass(true);
 
         InputMapper inputMapper = GuiGlobals.getInstance().getInputMapper();
         MainFunctions.initializeDefaultMappings(inputMapper);
