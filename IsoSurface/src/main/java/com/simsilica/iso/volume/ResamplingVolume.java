@@ -1,6 +1,6 @@
 /*
- * ${Id}
- *
+ * $Id$
+ * 
  * Copyright (c) 2014, Simsilica, LLC
  * All rights reserved.
  * 
@@ -34,60 +34,44 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.arboreal;
+package com.simsilica.iso.volume;
 
-import com.jme3.app.Application;
-import com.simsilica.builder.Builder;
-import com.simsilica.lemur.event.BaseAppState;
+import com.jme3.math.Vector3f;
+import com.simsilica.iso.DensityVolume;
 
 
 /**
+ *  Presents a resampled view of a delegate volume where the
+ *  x, y, and z space may be rescaled.
  *
  *  @author    Paul Speed
  */
-public class BuilderState extends BaseAppState {
-
-    private Builder builder;
-    private int maxUpdates; 
+public class ResamplingVolume implements DensityVolume {
+ 
+    private Vector3f scale;
+    private DensityVolume delegate;
     
-    public BuilderState( int poolSize, int maxUpdates ) {
-        this.builder = new Builder("Builder", poolSize);
-        this.maxUpdates = maxUpdates;
+    public ResamplingVolume( Vector3f scale, DensityVolume delegate ) {
+        this.scale = scale.clone();
+        this.delegate = delegate;
     }
-
-    public Builder getBuilder() {
-        return builder;
+ 
+    public float getDensity( int x, int y, int z ) {
+        return getDensity((float)x, (float)y, (float)z);   
     }
-
-    @Override
-    protected void initialize( Application app ) {    
+       
+    public float getDensity( float x, float y, float z ) {
+        x *= scale.x;
+        y *= scale.y;
+        z *= scale.z;
+        return delegate.getDensity(x, y, z);
     }
-
-    @Override
-    protected void cleanup( Application app ) {
-        builder.shutdown();
-        
-        // Can't restart it once shutdown so we might as well
-        // poison the well
-        builder = null;
-    }
-
-    @Override
-    protected void enable() {
-        // We have to check because the first time through
-        // it won't be paused.
-        if( builder.isPaused() ) {
-            builder.resume();
-        }
-    }
-
-    @Override
-    public void update( float tpf ) {       
-        builder.applyUpdates(maxUpdates);
-    }
-
-    @Override
-    protected void disable() {
-        builder.pause();
+    
+    public Vector3f getFieldDirection( float x, float y, float z, Vector3f target ) {
+        x *= scale.x;
+        y *= scale.y;
+        z *= scale.z;
+        Vector3f dir = delegate.getFieldDirection(x, y, z, target);
+        return dir;
     }
 }

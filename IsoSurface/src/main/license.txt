@@ -1,6 +1,4 @@
 /*
- * ${Id}
- *
  * Copyright (c) 2014, Simsilica, LLC
  * All rights reserved.
  * 
@@ -34,60 +32,3 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.arboreal;
-
-import com.jme3.app.Application;
-import com.simsilica.builder.Builder;
-import com.simsilica.lemur.event.BaseAppState;
-
-
-/**
- *
- *  @author    Paul Speed
- */
-public class BuilderState extends BaseAppState {
-
-    private Builder builder;
-    private int maxUpdates; 
-    
-    public BuilderState( int poolSize, int maxUpdates ) {
-        this.builder = new Builder("Builder", poolSize);
-        this.maxUpdates = maxUpdates;
-    }
-
-    public Builder getBuilder() {
-        return builder;
-    }
-
-    @Override
-    protected void initialize( Application app ) {    
-    }
-
-    @Override
-    protected void cleanup( Application app ) {
-        builder.shutdown();
-        
-        // Can't restart it once shutdown so we might as well
-        // poison the well
-        builder = null;
-    }
-
-    @Override
-    protected void enable() {
-        // We have to check because the first time through
-        // it won't be paused.
-        if( builder.isPaused() ) {
-            builder.resume();
-        }
-    }
-
-    @Override
-    public void update( float tpf ) {       
-        builder.applyUpdates(maxUpdates);
-    }
-
-    @Override
-    protected void disable() {
-        builder.pause();
-    }
-}

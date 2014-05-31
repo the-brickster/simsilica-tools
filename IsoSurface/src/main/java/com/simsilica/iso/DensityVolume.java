@@ -33,43 +33,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
-package com.simsilica.arboreal.builder;
+
+package com.simsilica.iso;
+
+import com.jme3.math.Vector3f;
 
 
 /**
+ *  Represents a volume of space from which density
+ *  values may be sampled.  Default implementations can be
+ *  found in com.simsilica.iso.volume.
  *
  *  @author    Paul Speed
  */
-public interface BuilderReference {
+public interface DensityVolume {
+
+    /**
+     *  Retrieves a density value at a specific integer grid corner.
+     *  For some density volumes this may be optimized to avoid
+     *  trilinear interpolation.
+     */ 
+    public float getDensity( int x, int y, int z );
     
     /**
-     *  Returns the priority used for sorting this
-     *  reference into the worker queue.  The Builder
-     *  will use this when adding a task or when pausing and
-     *  resuming the Builder.
-     */
-    public int getPriority();
+     *  Retrieves a density value from the specified point in
+     *  this volume.
+     */   
+    public float getDensity( float x, float y, float z );
     
     /**
-     *  Called on a background thread to perform the
-     *  background action.
+     *  Retrieves the field direction at a particular point in this
+     *  volume.  Field direction can be used to define surface normals,
+     *  potentially predict collisions, etc..
      */
-    public void build();
-    
-    /**
-     *  Called on the thread that calls Builder.applyUpdates()
-     *  when applyUpdates() is called.
-     */
-    public void apply();
-    
-    /**
-     *  Called from the thread that calls Builder.applyUpdates()
-     *  when applyUpdates() is called but this reference is
-     *  no longer being managed by the Builder.  This will only
-     *  be called if build() was previously called.   
-     */
-    public void release();
+    public Vector3f getFieldDirection( float x, float y, float z, Vector3f target );
 }
-
-
