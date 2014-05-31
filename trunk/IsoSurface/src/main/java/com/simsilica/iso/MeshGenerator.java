@@ -1,6 +1,6 @@
 /*
- * ${Id}
- *
+ * $Id$
+ * 
  * Copyright (c) 2014, Simsilica, LLC
  * All rights reserved.
  * 
@@ -34,60 +34,31 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.arboreal;
+package com.simsilica.iso;
 
-import com.jme3.app.Application;
-import com.simsilica.builder.Builder;
-import com.simsilica.lemur.event.BaseAppState;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Mesh;
 
 
 /**
  *
  *  @author    Paul Speed
  */
-public class BuilderState extends BaseAppState {
+public interface MeshGenerator {
 
-    private Builder builder;
-    private int maxUpdates; 
+    /**
+     *  Returns the size of the density volume required for mesh
+     *  generation.
+     */
+    public Vector3f getRequiredVolumeSize();
     
-    public BuilderState( int poolSize, int maxUpdates ) {
-        this.builder = new Builder("Builder", poolSize);
-        this.maxUpdates = maxUpdates;
-    }
-
-    public Builder getBuilder() {
-        return builder;
-    }
-
-    @Override
-    protected void initialize( Application app ) {    
-    }
-
-    @Override
-    protected void cleanup( Application app ) {
-        builder.shutdown();
-        
-        // Can't restart it once shutdown so we might as well
-        // poison the well
-        builder = null;
-    }
-
-    @Override
-    protected void enable() {
-        // We have to check because the first time through
-        // it won't be paused.
-        if( builder.isPaused() ) {
-            builder.resume();
-        }
-    }
-
-    @Override
-    public void update( float tpf ) {       
-        builder.applyUpdates(maxUpdates);
-    }
-
-    @Override
-    protected void disable() {
-        builder.pause();
-    }
+    /**
+     *  Returns the predicted size of the generated meshes.
+     */ 
+    public Vector3f getGenerationSize();
+ 
+    /**
+     *  Builds a mesh from the specified density volume.
+     */   
+    public Mesh buildMesh( DensityVolume volume );    
 }
