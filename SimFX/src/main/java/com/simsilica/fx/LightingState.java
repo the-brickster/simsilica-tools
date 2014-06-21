@@ -34,7 +34,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.iso.demo;
+package com.simsilica.fx;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
