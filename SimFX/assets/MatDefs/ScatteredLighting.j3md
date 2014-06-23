@@ -1,4 +1,4 @@
-MaterialDef Phong Lighting {
+MaterialDef Scattered Phong Lighting {
 
     MaterialParameters {
 
@@ -132,11 +132,6 @@ MaterialDef Phong Lighting {
         Int NumberOfBones
         Matrix4Array BoneMatrices
         
-        // For wind
-        Texture2D WindNoise
-        Boolean UseWind        
-        Float TrunkFlexibility : 1.0
-        
         // Ground scattering parameters
         Boolean UseScattering       
         Vector3 SunPosition
@@ -155,20 +150,16 @@ MaterialDef Phong Lighting {
 
         LightMode MultiPass
 
-        VertexShader GLSL110:   MatDefs/IndexedBillboardLighting.vert
-        FragmentShader GLSL110: MatDefs/ScatteredLighting.frag
+        VertexShader GLSL100:   Common/MatDefs/Light/Lighting.vert
+        FragmentShader GLSL100: Common/MatDefs/Light/Lighting.frag
 
         WorldParameters {
             WorldViewProjectionMatrix
-            ViewProjectionMatrix
             NormalMatrix
             WorldViewMatrix
             ViewMatrix
             CameraPosition
             WorldMatrix
-            ProjectionMatrix
-            WorldMatrixInverse
-            Time
         }
 
         Defines {
@@ -199,32 +190,24 @@ MaterialDef Phong Lighting {
 
             NUM_BONES : NumberOfBones
             
-            USE_WIND : UseWind
             USE_SCATTERING : UseScattering
         }
     }
 
     Technique PreShadow {
 
-        VertexShader GLSL110 :   MatDefs/IndexedBillboardPreShadow.vert
+        VertexShader GLSL100 :   Common/MatDefs/Shadow/PreShadow.vert
         FragmentShader GLSL100 : Common/MatDefs/Shadow/PreShadow.frag
 
         WorldParameters {
             WorldViewProjectionMatrix
             WorldViewMatrix
-            ProjectionMatrix
-            NormalMatrix
-            CameraPosition
-            WorldMatrix
-            ViewProjectionMatrix
-            ViewMatrix
         }
 
         Defines {
             COLOR_MAP : ColorMap
             DISCARD_ALPHA : AlphaDiscardThreshold
             NUM_BONES : NumberOfBones
-            USE_WIND : UseWind
         }
 
         ForcedRenderState {

@@ -2,7 +2,6 @@
 //#define HQ_ATTENUATION
 
 #import "Common/ShaderLib/Skinning.glsllib"
-
 #import "MatDefs/VertScattering.glsllib"
 
 uniform mat4 g_WorldViewProjectionMatrix;
@@ -10,7 +9,6 @@ uniform mat4 g_WorldViewMatrix;
 uniform mat4 g_WorldMatrix;
 uniform mat3 g_NormalMatrix;
 uniform mat4 g_ViewMatrix;
-uniform mat4 g_ViewProjectionMatrix;
 uniform vec3 g_CameraPosition;
 
 uniform vec4 m_Ambient;
@@ -33,18 +31,11 @@ varying vec4 DiffuseSum;
 varying vec3 SpecularSum;
 
 attribute vec3 inPosition;
-attribute vec4 inTexCoord;
+attribute vec2 inTexCoord;
 attribute vec3 inNormal;
-attribute float inSize;
 
 varying vec3 lightVec;
 //varying vec4 spotVec;
-
-#ifdef USE_WIND
-  uniform float g_Time; 
-#endif
-
-#import "MatDefs/TreeWind.glsllib"
 
 #ifdef VERTEX_COLOR
   attribute vec4 inColor;
@@ -160,96 +151,19 @@ void main(){
         #endif
    #endif
 
-   // ** Added sections indicated with '**' comments
+   #ifdef USE_SCATTERING
+        vec4 wPos = g_WorldMatrix * modelSpacePos;
+        calculateVertexGroundScattering(wPos.xyz, g_CameraPosition);
+   #endif
 
-   // ** inTexCoord contains the real tex coord for the atlas
-   // ** and the corner indicator
-   texCoord = inTexCoord.zw;
-   vec2 corner = inTexCoord.xy;
-
-   // ** Project the model space position down the normal just 
-   // ** slightly
-   modelSpacePos.xyz += modelSpaceNorm * 0.1; 
-
-   // ** original gl_Position calculation bypassed
-   // gl_Position = g_WorldViewProjectionMatrix * modelSpacePos;
-   // texCoord = inTexCoord;
-
-   // ** #if block for position and normal calculation depending
-   // ** on billboard type.   
-   #ifdef SCREEN_PARALLEL
-        // Billboard corners are calculated in straight view
-        // space and so will rotated to be parallel to the screen
-        // even as the camera turns (which can be unnerving)
-        vec3 wvPosition = (g_WorldViewMatrix * modelSpacePos).xyz;
-        wvPosition.x += (corner.x - 0.5) * inSize;
-        wvPosition.y += (corner.y - 0.5) * inSize;
-    
-        gl_Position = g_ProjectionMatrix * vec4(wvPosition, 1.0);
-
-        vec3 wvNormal = normalize(vec3(corner.x - 0.5, corner.y - 0.5, 0.5));     
-    #else
-
-        // Get the world position (not world view) because
-        // billboarding will be done in world space
-        vec4 wPosition = g_WorldMatrix * modelSpacePos; 
-
-        #ifdef USE_WIND
-            // Calculate the wind from the unprojected position so that
-            // the whole leaf quad gets the same wind
-            vec4 groundPos = g_WorldMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-            float windStrength = 0.75;
-            vec3 wind = calculateWind(groundPos.xyz, wPosition.xyz - groundPos.xyz, windStrength);
-            wPosition.xyz += wind;
-        #endif
-
-        // Calculate the screen parallel axis vectors
-        vec3 dir = normalize(wPosition.xyz - g_CameraPosition);
-        vec3 left = normalize(cross(dir, vec3(0.0, 1.0, 0.0)));
-        vec3 up = normalize(cross(left, dir)); 
-        vec3 billboardNormal = normalize(cross(left, up)); 
-
-        // Move the corners out relative to our calculated
-        // axes and scaled by inSize
-        wPosition.xyz += left * (corner.x - 0.5) * inSize;
-        wPosition.xyz += up * (corner.y - 0.5) * inSize;
-
-        // Push it a little towards the camera (should maybe be a parameter)
-        wPosition.xyz += billboardNormal * 0.5;
-
-        #ifdef USE_SCATTERING
-            calculateVertexGroundScattering(wPosition.xyz, g_CameraPosition);
-        #endif
-
-        // Calculate the world view position
-        vec3 wvPosition = (g_ViewMatrix * wPosition).xyz; 
-
-        gl_Position = g_ViewProjectionMatrix * wPosition;
- 
-        // Calculate a splayed set of normals based on the corner to simulate
-        // curvature.  This allows the billboard to be lit no matter the
-        // current direction.
-        // Normal is calculated by mixing the real world-normal for the 
-        // surface with the splayed normal.
-        vec3 wNormal = (g_WorldMatrix * vec4(modelSpaceNorm, 0.0)).xyz * 0.1; 
-        wNormal += left * (corner.x - 0.5);        
-        wNormal += up * (corner.y - 0.5);
-        wNormal += billboardNormal * 0.5;
- 
-        // Now convert the world normal to world view space               
-        vec3 wvNormal = normalize((g_ViewMatrix * vec4(wNormal, 0.0)).xyz); 
-        
-    #endif
-   
-   
+   gl_Position = g_WorldViewProjectionMatrix * modelSpacePos;
+   texCoord = inTexCoord;
    #ifdef SEPARATE_TEXCOORD
       texCoord2 = inTexCoord2;
    #endif
 
-   // ** these calculations have been superceded by the above
-   // vec3 wvPosition = (g_WorldViewMatrix * modelSpacePos).xyz;
-   // vec3 wvNormal  = normalize(g_NormalMatrix * modelSpaceNorm);
-   
+   vec3 wvPosition = (g_WorldViewMatrix * modelSpacePos).xyz;
+   vec3 wvNormal  = normalize(g_NormalMatrix * modelSpaceNorm);
    vec3 viewDir = normalize(-wvPosition);
   
        //vec4 lightColor = g_LightColor[gl_InstanceID];
