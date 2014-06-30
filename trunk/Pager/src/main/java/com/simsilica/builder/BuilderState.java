@@ -42,13 +42,21 @@ import com.jme3.app.Application;
 // but just for this.
 import com.simsilica.lemur.event.BaseAppState;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ *  Manages a Builder instance making sure applyUpdates() is
+ *  called once per frame with a defined max value.  This state
+ *  also does some builder-related cleanup processing in cleanup()
+ *  by processing any pending updates before returning.
  *
  *  @author    Paul Speed
  */
 public class BuilderState extends BaseAppState {
 
+    static Logger log = LoggerFactory.getLogger(BuilderState.class);
+    
     private Builder builder;
     private int maxUpdates; 
     
@@ -61,6 +69,14 @@ public class BuilderState extends BaseAppState {
         this.maxUpdates = maxUpdates;
     }
 
+    /**
+     *  Sets the maximum number of updates that will be applied
+     *  in a single frame.  Keep this value low to avoid frame drops
+     *  but keep it high enough that updates get applied in a timely
+     *  manner.  The proper value is application specific and will
+     *  depend on how much time it takes to apply updates versus how
+     *  fast updates come in.
+     */
     public void setMaxUpdates( int i ) {
         this.maxUpdates = i;
     }
@@ -69,6 +85,10 @@ public class BuilderState extends BaseAppState {
         return maxUpdates;
     }
 
+    /**
+     *  Returns the managed Builder object for queing BuilderReferences to be 
+     *  built by the background thread pool.
+     */
     public Builder getBuilder() {
         return builder;
     }
@@ -79,7 +99,17 @@ public class BuilderState extends BaseAppState {
 
     @Override
     protected void cleanup( Application app ) {
+        
+        log.trace("cleanup()");    
         builder.shutdown();
+        
+        // And let's apply all updates while we are here
+        // I'll do them in batches of 100 to be safe
+        int updates;
+        while( (updates = builder.applyUpdates(100)) > 0 ) {
+            log.trace("Builder cleanup: applied " + updates + " updates.");   
+        }
+        log.trace("Builder cleanup: applied " + updates + " updates.");   
         
         // Can't restart it once shutdown so we might as well
         // poison the well
